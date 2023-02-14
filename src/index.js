@@ -18,7 +18,7 @@ function checksExistsUserAccount(request, response, next) {
   const user = users.find((users) => users.username === username)
 
   if (!user) {
-    return response.status(400).json({ error: "Usuario não encontrado" });
+    return response.status(404).json({ error: "User not found" });
   }
 
   request.user = user;
@@ -103,22 +103,47 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
     const todo = user.todo.find((todo) => todo.id === id)
 
     if(!todo){
-      return response.status(400).json({message: "TODO não encontrado...!"})
+      return response.status(404).json({error: "TODO not found!"})
     }
 
     todo.title = title;
-    todo.deadLine = deadLine;
+    todo.deadLine = new Date(deadLine);
 
-    return response.status(201).json({message: "TODO alterado com sucesso...!"}).send();
+    return response.json(todo);
 
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const {id} = request.params;
+  const {user} = request;
+  const todo = user.todo.find((todo) => todo.id === id)
+
+  if(!todo){
+    return response.status(404).json({error: "TODO not found...!"})
+  }
+
+  todo.done = true;
+
+  return response.json(todo);
+
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const {id} = request.params;
+  const {user} = request;
+
+  const todo = user.todo.find((todo) => todo.id === id)
+
+  if(!todo){
+    return response.status(404).json({message: "TODO não encontrado...!"})
+  }
+
+ 
+  user.todo.splice(todo,1)
+
+  return response.status(204).json();
 });
 
 module.exports = app;
